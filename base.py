@@ -64,7 +64,7 @@ class ModelBase(object):
         # Save the model and parameters
         ckpCallBack = ModelCheckpoint(
             f'./ckpt/model_{label}.ckpt',
-            monitor='accuracy', save_best_only=True, mode='max')
+            monitor='acc', save_best_only=True, save_weights_only=True, mode='max')
 
         # Train the model
         train_set, valid_set = self.split_examples(examples)
