@@ -14,8 +14,8 @@ from keras.models import Model
 from keras.layers import Dense, Embedding, Input
 from keras.layers.recurrent import LSTM
 
-from vectorization import WordVectorizer, dataset_tokenize
-from base import ModelBase
+from .vectorization import WordVectorizer, dataset_tokenize
+from .base import ModelBase
 
 class SeqSimRNN(ModelBase):
     """ Similarity models based on RNN. """

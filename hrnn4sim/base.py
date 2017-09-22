@@ -17,8 +17,8 @@ import tensorflow as tf
 from keras import backend as K
 from keras.callbacks import TensorBoard, ModelCheckpoint
 
-from vectorization import get_fullbatch, get_minibatches
-from vectorization import dataset_tokenize
+from .vectorization import get_fullbatch, get_minibatches
+from .vectorization import dataset_tokenize
 
 
 class ModelBase(object):

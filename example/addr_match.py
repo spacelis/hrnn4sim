@@ -21,8 +21,8 @@ import click
 def console(model, csvfile):
     ''' Train a model for similarity measures.
     '''
-    from seqsim_hrnn import SeqSimHRNN
-    from seqsim_rnn import SeqSimRNN
+    from hrnn4sim.seqsim_hrnn import SeqSimHRNN
+    from hrnn4sim.seqsim_rnn import SeqSimRNN
     if model == 'HRNN':
         model_class = SeqSimHRNN
     elif model == 'RNN':

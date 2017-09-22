@@ -16,8 +16,8 @@ from keras.layers import Dense, Embedding, Input, Lambda
 from keras.layers.wrappers import TimeDistributed
 from keras.layers.recurrent import LSTM, SimpleRNN
 
-from vectorization import SubWordVectorizer
-from base import ModelBase
+from .vectorization import SubWordVectorizer
+from .base import ModelBase
 
 
 class SeqSimHRNN(ModelBase):
