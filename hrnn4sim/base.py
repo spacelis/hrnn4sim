@@ -10,6 +10,7 @@ Description: Training utility functions
 
 # pylint: disable=invalid-name
 
+from __future__ import print_function
 from datetime import datetime
 
 import pandas as pd
@@ -54,16 +55,16 @@ class ModelBase(object):
         self.vectorizer = self.make_vectorizer(examples)
         self.build()
 
-        label = f'{self.__class__.__name__}_{datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        label = '{}_{}'.format(self.__class__.__name__, datetime.now().strftime("%Y%m%d_%H%M%S"))
 
         # Write Summaries to Tensorboard log
         tbCallBack = TensorBoard(
-            log_dir=f'./tfgraph/{label}',
+            log_dir='./tfgraph/{}'.format(label),
             histogram_freq=100, write_graph=True)
 
         # Save the model and parameters
         ckpCallBack = ModelCheckpoint(
-            f'./ckpt/model_{label}.ckpt',
+            './ckpt/model_{}.ckpt'.format(label),
             monitor='acc', save_best_only=True, save_weights_only=True, mode='max')
 
         # Train the model

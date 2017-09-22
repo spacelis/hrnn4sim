@@ -45,7 +45,7 @@ def vec_align(arrs):
             maxlens = tuple(
                 max(a, b)
                 for a, b in zip(lens, maxlens + ((0,) * (len(lens) - len(maxlens)))))
-    return (len(arrs), *maxlens)
+    return (len(arrs),) + maxlens
 
 
 def dataset_tokenize(examples, tokenizer=SIMPLE_TOKENIZER):

@@ -11,6 +11,7 @@ distinuishable especially for numbers may limit the ability for the
 models to generalize.
 """
 
+from __future__ import print_function
 import click
 
 

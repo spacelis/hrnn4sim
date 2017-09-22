@@ -10,6 +10,7 @@ Description: Augmenting data with some sythetic negative examples.
 
 # pylint: disable=invalid-name
 
+from __future__ import print_function
 import re
 import random
 
@@ -97,9 +98,9 @@ def console(src, dst):
     '''
     raw_data = pd.read_csv(src)
 
-    print(f"uniqA={raw_data['addra'].nunique()}")
-    print(f"uniqB={raw_data['addrb'].nunique()}")
-    print(f"pairCnt={len(raw_data)}")
+    print("uniqA={}".format(raw_data['addra'].nunique()))
+    print("uniqB={}".format(raw_data['addrb'].nunique()))
+    print("pairCnt={}".format(len(raw_data)))
 
     examples = data_augmentation(raw_data).sample(frac=1)  # Randomized rows
     examples.to_csv(dst, index=False)
