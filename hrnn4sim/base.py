@@ -67,11 +67,6 @@ class ModelBase(object):
             #histogram_freq=100,
             write_graph=True)
 
-        # Save the model and parameters
-        ckpCallBack = ModelCheckpoint(
-            pjoin(job_dir, 'ckpt', 'model_{}.ckpt'.format(label)),
-            monitor='acc', save_best_only=True, save_weights_only=True, mode='max')
-
         # Train the model
         train_set, valid_set = self.split_examples(examples)
         x, y = get_fullbatch(train_set, self.vectorizer)
@@ -81,10 +76,16 @@ class ModelBase(object):
 
         K.set_session(self.session)
         self.model.fit(x, y, batch_size=100, epochs=epochs,
-                       callbacks=[tbCallBack, ckpCallBack])
+                       callbacks=[tbCallBack])
         # Validation
         loss, acc = self.model.evaluate(vx, vy, batch_size=100)
         print()
+        self.model.save_weights('model.h5.tmp')
+        with file_io.FileIO('model.h5.tmp', mode='r') as fin:
+            model_path = pjoin(job_dir, 'ckpt', 'model_{}.h5'.format(label))
+            with file_io.FileIO(model_path, mode='w') as fout:
+                fout.write(fin.read())
+                print("Saved model.h5 to GCS")
         print('Loss =', loss)
         print('Accuracy =', acc)
 
