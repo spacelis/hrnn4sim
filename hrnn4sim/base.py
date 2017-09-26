@@ -12,9 +12,11 @@ Description: Training utility functions
 
 from __future__ import print_function
 from datetime import datetime
+from os.path import join as pjoin
 
 import pandas as pd
 import tensorflow as tf
+from tensorflow.python.lib.io import file_io
 from keras import backend as K
 from keras.callbacks import TensorBoard, ModelCheckpoint
 
@@ -49,9 +51,11 @@ class ModelBase(object):
         ''' Build the model '''
         raise NotImplementedError()
 
-    def train(self, filename, epochs=30):
+    def train(self, filename, epochs=30, job_dir='.'):
+        # pylint: disable=too-many-locals
         ''' Train the model '''
-        examples = pd.read_csv(filename)
+        with file_io.FileIO(filename, 'r') as fin:
+            examples = pd.read_csv(fin)
         self.vectorizer = self.make_vectorizer(examples)
         self.build()
 
@@ -59,12 +63,13 @@ class ModelBase(object):
 
         # Write Summaries to Tensorboard log
         tbCallBack = TensorBoard(
-            log_dir='./tfgraph/{}'.format(label),
-            histogram_freq=100, write_graph=True)
+            log_dir=pjoin(job_dir, 'tfgraph', label),
+            #histogram_freq=100,
+            write_graph=True)
 
         # Save the model and parameters
         ckpCallBack = ModelCheckpoint(
-            './ckpt/model_{}.ckpt'.format(label),
+            pjoin(job_dir, 'ckpt', 'model_{}.ckpt'.format(label)),
             monitor='acc', save_best_only=True, save_weights_only=True, mode='max')
 
         # Train the model
