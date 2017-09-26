@@ -85,7 +85,7 @@ class ModelBase(object):
             model_path = pjoin(job_dir, 'ckpt', 'model_{}.h5'.format(label))
             with file_io.FileIO(model_path, mode='w') as fout:
                 fout.write(fin.read())
-                print("Saved model.h5 to GCS")
+                print("Saved {}".format(model_path))
         print('Loss =', loss)
         print('Accuracy =', acc)
 
