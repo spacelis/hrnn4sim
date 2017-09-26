@@ -18,8 +18,12 @@ import click
 @click.command()
 @click.option('-m', '--model', default='HRNN',
               help='HRNN or RNN for encoder/decoder (default: HRNN)')
-@click.argument('csvfile', type=click.Path(exists=True))
-def console(model, csvfile):
+@click.option('--job-dir', default='.',
+              help='The directory to use for the job, e.g., models, logs. (default: .)')
+@click.option('-e', '--epochs', default=2,
+              help='Number of epochs to run the training. (default: 2)')
+@click.argument('csvfile')
+def console(model, job_dir, epochs, csvfile):
     ''' Train a model for similarity measures.
     '''
     from hrnn4sim.seqsim_hrnn import SeqSimHRNN
@@ -31,7 +35,7 @@ def console(model, csvfile):
     else:
         print('Error: {model} is not recognized as a model. Please use HRNN or RNN.')
     mdl = model_class()
-    mdl.train(csvfile)
+    mdl.train(csvfile, epochs=epochs, job_dir=job_dir)
 
 
 if __name__ == "__main__":
