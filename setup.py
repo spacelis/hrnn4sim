@@ -3,7 +3,7 @@ from setuptools import setup
 
 REQUIRED_PACKAGES = [
     'keras>=2.0.6',
-    'tensorflow>=1.2.1',
+    'tensorflow-gpu>=1.2',
     'nltk>=3.2.4',
     'numpy>=1.13.1',
     'pandas>=0.20.3',
