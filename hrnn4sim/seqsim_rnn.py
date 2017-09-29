@@ -19,10 +19,9 @@ from .base import ModelBase
 
 class SeqSimRNN(ModelBase):
     """ Similarity models based on RNN. """
-    def __init__(self):
-        super(SeqSimRNN, self).__init__()
+    def __init__(self, state_size=256, **kwargs):
+        super(SeqSimRNN, self).__init__(**kwargs)
         self.state_size = 256
-        self.feature_size = 256
 
     def build(self):
         ''' Build a RNN based model. '''

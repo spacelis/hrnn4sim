@@ -22,17 +22,18 @@ from .base import ModelBase
 
 class SeqSimHRNN(ModelBase):
     """ Similiarity Model based on HierarchicalRNN """
-    def __init__(self, embedding_size=64, state_size=256):  # pylint: disable=too-many-locals
-        super(SeqSimHRNN, self).__init__()
+    def __init__(self, embedding_size=64, state_size=256, batch_size=100, **kwargs):  # pylint: disable=too-many-locals
+        super(SeqSimHRNN, self).__init__(**kwargs)
         self.embedding_size = embedding_size
         self.state_size = state_size
+        self.batch_size = batch_size
 
     def build(self):
         ''' Build the model '''
         K.set_session(self.session)
         ### Hierarchical Recurrent Neural Network
-        A = Input(batch_shape=(100, None, None))
-        B = Input(batch_shape=(100, None, None))
+        A = Input(batch_shape=(self.batch_size, None, None))
+        B = Input(batch_shape=(self.batch_size, None, None))
         masking = Lambda(
             lambda inputs: K.any(
                 K.not_equal(
@@ -65,6 +66,7 @@ class SeqSimHRNN(ModelBase):
         self.model.compile(loss='binary_crossentropy',
                            optimizer='adam',
                            metrics=['accuracy'])
+        self.model.summary()
 
     def make_vectorizer(self, examples):  #pylint: disable=unused-variable
         ''' Make a vectorizer for HRNN '''

@@ -12,6 +12,7 @@ models to generalize.
 """
 
 from __future__ import print_function
+import sys
 import click
 
 
@@ -22,20 +23,32 @@ import click
               help='The directory to use for the job, e.g., models, logs. (default: .)')
 @click.option('-e', '--epochs', default=2,
               help='Number of epochs to run the training. (default: 2)')
+@click.option('-b', '--batch-size', default=100,
+              help='The size of the batch. (default: 100)')
+@click.option('-s', '--embedding-size', default=64,
+              help='The size of the embedding states (HRNN only). (default: 64)')
+@click.option('-t', '--split-ratio', default=0.8,
+              help='The ratio for train/test split. (default: 0.8)')
+@click.option('-h', '--state-size', default=256,
+              help='The size of the hidden states. (default: 64)')
+@click.option('-l', '--log-device', is_flag=True)
 @click.argument('csvfile')
-def console(model, job_dir, epochs, csvfile):
+def console(model, job_dir, epochs, batch_size, split_ratio,
+            embedding_size, state_size, log_device, csvfile):
     ''' Train a model for similarity measures.
     '''
     from hrnn4sim.seqsim_hrnn import SeqSimHRNN
     from hrnn4sim.seqsim_rnn import SeqSimRNN
     if model == 'HRNN':
-        model_class = SeqSimHRNN
+        mdl = SeqSimHRNN(embedding_size=embedding_size, state_size=state_size,
+                         batch_size=batch_size, log_device=log_device)
     elif model == 'RNN':
-        model_class = SeqSimRNN
+        mdl = SeqSimRNN(state_size=state_size, log_device=log_device)
     else:
         print('Error: {model} is not recognized as a model. Please use HRNN or RNN.')
-    mdl = model_class()
-    mdl.train(csvfile, epochs=epochs, job_dir=job_dir)
+        sys.exit(1)
+    mdl.train(csvfile, epochs=epochs, batch_size=batch_size,
+              split_ratio=split_ratio, job_dir=job_dir)
 
 
 if __name__ == "__main__":
