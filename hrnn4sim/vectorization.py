@@ -57,9 +57,10 @@ def dataset_tokenize(examples, tokenizer=SIMPLE_TOKENIZER):
 
 class SubWordVectorizer(object):
     """ Make nested vectors from a word sequence"""
-    def __init__(self, alphabet=ALPHABET):
+    def __init__(self, alphabet=ALPHABET, bidir=False):
         super(SubWordVectorizer, self).__init__()
         self.alphabet = alphabet
+        self.bidir = bidir
         self.lookup = {k: i for i, k in enumerate(alphabet, 1)}
 
     def encode_tokenseq(self, seq):
@@ -75,7 +76,8 @@ class SubWordVectorizer(object):
         """ Vectorize a set of token seqs
 
         :seqs: a list of token seqs (string lists)
-        :returns: a tensor of encoded seqs [batch_size, max(seq_size), max(token_size)]
+        :returns: a tensor of encoded seqs [batch_size, max(seq_size), max(token_size)] or
+            a tuple of tensors for bi-directional sequence if bidir is true.
 
         """
         encoded_seqs = [self.encode_tokenseq(s) for s in seqs]
@@ -85,7 +87,16 @@ class SubWordVectorizer(object):
             for j, token in enumerate(seq):
                 for k, c in enumerate(token):
                     A[i, j, k] = c
-        return A
+
+        if self.bidir:
+            Ar = np.zeros(shape)
+            for i, seq in enumerate(encoded_seqs[::-1]):
+                for j, token in enumerate(seq):
+                    for k, c in enumerate(token):
+                        Ar[i, j, k] = c
+            return A, Ar
+        else:
+            return A
 
 
 class WordVectorizer(object):
@@ -123,7 +134,11 @@ def get_minibatches(dataset, vectorizer, size=100, tokenizer=dataset_tokenize,
         ex = tokenizer(ex_orig)
         a = vectorizer.vectorize(tuple(ex['seqa']))
         b = vectorizer.vectorize(tuple(ex['seqb']))
-        pack = ([a, b], )
+        if not isinstance(a, (tuple, list)):
+            a = [a]
+        if not isinstance(b, (tuple, list)):
+            b = [b]
+        pack = ([*a, *b], )
         if with_y:
             pack += (ex['matched'], )
         if with_original:

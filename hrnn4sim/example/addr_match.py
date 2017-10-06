@@ -38,10 +38,14 @@ def console(model, job_dir, epochs, batch_size, split_ratio,
     ''' Train a model for similarity measures.
     '''
     from hrnn4sim.seqsim_hrnn import SeqSimHRNN
+    from hrnn4sim.seqsim_bihrnn import SeqSimBiHRNN
     from hrnn4sim.seqsim_rnn import SeqSimRNN
     if model == 'HRNN':
         mdl = SeqSimHRNN(embedding_size=embedding_size, state_size=state_size,
                          batch_size=batch_size, log_device=log_device)
+    elif model == 'BHRNN':
+        mdl = SeqSimBiHRNN(embedding_size=embedding_size, state_size=state_size,
+                           batch_size=batch_size, log_device=log_device)
     elif model == 'RNN':
         mdl = SeqSimRNN(state_size=state_size, log_device=log_device)
     else:
