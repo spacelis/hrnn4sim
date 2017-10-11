@@ -24,24 +24,24 @@ guide for ML Engine](https://cloud.google.com/ml-engine/docs/quickstarts/command
 In the root directory of this codebase, run the following command
 
 ```
-gcloud ml-engine jobs submit training hrnn_test_train8 \
+gcloud ml-engine jobs submit training hrnn_test_train \
   --region=us-east1 \
   --scale-tier=BASIC_GPU \
   --runtime-version=1.2 \
   --job-dir=gs://hrnn/hrnn_test_train8 \
-  --package-path=hrnn4sim \
-  --module-name=hrnn4sim.example.addr_match \
+  --package-path=hrnn \
+  --module-name=hrnn.example.addr_match \
   -- -m HRNN -e 2 gs://hrnn/data/training_examples.csv
 ```
 
 or, if you prefer CPU-only version
 
 ```
-gcloud ml-engine jobs submit training hrnn_test_train8 \
+gcloud ml-engine jobs submit training hrnn_test_train \
   --region=us-east1 \
   --runtime-version=1.2 \
   --job-dir=gs://hrnn/hrnn_test_train8 \
-  --package-path=hrnn4sim \
-  --module-name=hrnn4sim.example.addr_match \
+  --package-path=hrnn \
+  --module-name=hrnn.example.addr_match \
   -- -m HRNN -e 2 gs://hrnn/data/training_examples.csv
 ```
