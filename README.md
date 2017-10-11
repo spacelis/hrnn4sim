@@ -1,4 +1,4 @@
-# hrnn4sim
+# HRNN
 
 Hierarchical RNN can be useful for encoding sequences of tokens where
 tokens may share similar features when they are seen as sequences. The
