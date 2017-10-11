@@ -13,10 +13,10 @@ REQUIRED_PACKAGES = [
 ]
 
 setup(
-    name='hrnn',
+    name='hrnn4sim',
     version='0.1',
     install_requires=REQUIRED_PACKAGES,
-    packages=['hrnn', 'hrnn.example'],
+    packages=['hrnn4sim', 'hrnn4sim.example'],
     include_package_data=True,
-    description='HRNN for text similarity and prediction'
+    description='HRNN for text similarity'
 )
