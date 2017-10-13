@@ -84,9 +84,10 @@ class ModelBase(object):
         # Validation
         loss, acc = self.model.evaluate(vx, vy, batch_size=batch_size)
         print()
+        model_label = '{}_loss_{}_acc_{}'.format(label, loss, acc)
         self.model.save_weights('model.h5.tmp')
         with file_io.FileIO('model.h5.tmp', mode='rb') as fin:
-            model_path = pjoin(job_dir, 'ckpt', 'model_{}.h5'.format(label))
+            model_path = pjoin(job_dir, 'ckpt', 'model_{}.h5'.format(model_label))
             with file_io.FileIO(model_path, mode='wb') as fout:
                 fout.write(fin.read())
                 print("Saved {}".format(model_path))
