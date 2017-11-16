@@ -55,12 +55,12 @@ class ModelBase(object):
         raise NotImplementedError()
 
     def train(self, filename, epochs=30, batch_size=100,
-              split_ratio=0.8, job_dir='.'):
+              split_ratio=0.8, job_dir='.', include_eos=False):
         # pylint: disable=too-many-locals
         ''' Train the model '''
         with file_io.FileIO(filename, 'r') as fin:
             examples = pd.read_csv(fin)
-        self.vectorizer = self.make_vectorizer(examples)
+        self.vectorizer = self.make_vectorizer(examples, include_eos=include_eos)
         self.build()
 
         label = '{}_{}'.format(self.__class__.__name__, datetime.now().strftime("%Y%m%d_%H%M%S"))

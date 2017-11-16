@@ -49,10 +49,11 @@ class SeqSimRNN(ModelBase):
                            optimizer='adam',
                            metrics=['accuracy'])
 
-    def make_vectorizer(self, examples):
+    def make_vectorizer(self, examples, **kwargs):
         examples = dataset_tokenize(examples)
         return WordVectorizer.from_tokens(
-            t
-            for s in chain(iter(examples['seqa']), iter(examples['seqb']))
-            for t in s
+            (t
+             for s in chain(iter(examples['seqa']), iter(examples['seqb']))
+             for t in s),
+            **kwargs
         )

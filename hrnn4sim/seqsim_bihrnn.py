@@ -86,6 +86,6 @@ class SeqSimBiHRNN(ModelBase):
                            metrics=['accuracy'])
         self.model.summary()
 
-    def make_vectorizer(self, examples):  #pylint: disable=unused-variable
+    def make_vectorizer(self, examples, **kwargs):  #pylint: disable=unused-variable
         ''' Make a vectorizer for HRNN '''
-        return SubWordVectorizer(bidir=True)
+        return SubWordVectorizer(bidir=True, **kwargs)

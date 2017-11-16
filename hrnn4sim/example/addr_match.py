@@ -31,10 +31,12 @@ import click
               help='The ratio for train/test split. (default: 0.8)')
 @click.option('-h', '--state-size', default=256,
               help='The size of the hidden states. (default: 64)')
+@click.option('--eos', is_flag=True,
+              help='Whether to use special characters at the end of sequences.')
 @click.option('-l', '--log-device', is_flag=True)
 @click.argument('csvfile')
 def console(model, job_dir, epochs, batch_size, split_ratio,
-            embedding_size, state_size, log_device, csvfile):
+            embedding_size, state_size, log_device, csvfile, eos):
     ''' Train a model for similarity measures.
     '''
     from hrnn4sim.seqsim_hrnn import SeqSimHRNN
@@ -52,7 +54,7 @@ def console(model, job_dir, epochs, batch_size, split_ratio,
         print('Error: {model} is not recognized as a model. Please use HRNN or RNN.')
         sys.exit(1)
     mdl.train(csvfile, epochs=epochs, batch_size=batch_size,
-              split_ratio=split_ratio, job_dir=job_dir)
+              split_ratio=split_ratio, job_dir=job_dir, include_eos=eos)
 
 
 if __name__ == "__main__":

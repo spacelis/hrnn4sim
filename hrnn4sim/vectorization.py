@@ -57,11 +57,15 @@ def dataset_tokenize(examples, tokenizer=SIMPLE_TOKENIZER):
 
 class SubWordVectorizer(object):
     """ Make nested vectors from a word sequence"""
-    def __init__(self, alphabet=ALPHABET, bidir=False):
+    def __init__(self, alphabet=ALPHABET, bidir=False, include_eos=False):
         super(SubWordVectorizer, self).__init__()
-        self.alphabet = alphabet
+        if include_eos:
+            self.alphabet = alphabet + '$%'
+        else:
+            self.alphabet = alphabet
         self.bidir = bidir
-        self.lookup = {k: i for i, k in enumerate(alphabet, 1)}
+        self.include_eos = include_eos
+        self.lookup = {k: i for i, k in enumerate(self.alphabet, 1)}
 
     def encode_tokenseq(self, seq):
         """Encode a token sequence as a vector of vectors.
@@ -70,6 +74,8 @@ class SubWordVectorizer(object):
         :returns: a list of lists of integers
 
         """
+        if self.include_eos:
+            return [[self.lookup[c] for c in token + '$'] for token in seq + ['%']]
         return [[self.lookup[c] for c in token] for token in seq]
 
     def vectorize(self, seqs):
@@ -101,14 +107,19 @@ class SubWordVectorizer(object):
 
 class WordVectorizer(object):
     """ Make a vector from a word sequence"""
-    def __init__(self, vocab):
+    def __init__(self, vocab, include_eos):
         super(WordVectorizer, self).__init__()
         self.vocab = vocab
+        self.include_eos = include_eos
 
     @classmethod
-    def from_tokens(cls, token_iter):
+    def from_tokens(cls, token_iter, include_eos=False):
         ''' Create a vectorizer from a token iterator '''
-        return cls({w: i for i, w in enumerate(frozenset(t for t in token_iter), 1)})
+        if include_eos:
+            return cls({w: i for i, w in enumerate(frozenset(t for t in list(token_iter) + ['%']), 1)},
+                    include_eos=False)
+        return cls({w: i for i, w in enumerate(frozenset(t for t in token_iter), 1)},
+                include_eos=True)
 
     def vectorize(self, seqs):
         """ Vectorize a set of token seqs
