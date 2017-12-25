@@ -46,7 +46,7 @@ class ModelBase(object):
         valid_set = examples[-valid_cnt:]
         return train_set, valid_set
 
-    def make_vectorizer(self, examples):
+    def make_vectorizer(self, examples, **kwargs):
         ''' Make a vectorizer for the model '''
         raise NotImplementedError()
 
@@ -54,8 +54,27 @@ class ModelBase(object):
         ''' Build the model '''
         raise NotImplementedError()
 
+    def save_model(self, job_dir, model_dir, model_label):
+        """ Save the trained model to the job_dir"""
+        self.model.save_weights('model.h5.tmp')
+        with file_io.FileIO('model.h5.tmp', mode='rb') as fin:
+            model_path = pjoin(job_dir, model_dir, 'model_{}.h5'.format(model_label))
+            with file_io.FileIO(model_path, mode='wb') as fout:
+                fout.write(fin.read())
+                print("Saved {}".format(model_path))
+
+    def load_model(self, job_dir, model_dir, model_label):
+        model_path = pjoin(job_dir, model_dir, 'model_{}.h5'.format(model_label))
+        with file_io.FileIO(model_path, mode='rb') as fin:
+            with file_io.FileIO('model.h5.tmp', mode='wb') as fout:
+                fout.write(fin.read())
+        self.model.load_weights('model.h5.tmp')
+        print("Load {}".format(model_path))
+
+
     def train(self, filename, epochs=30, batch_size=100,
-              split_ratio=0.8, job_dir='.', include_eos=False):
+              split_ratio=0.8, include_eos=False,
+              job_dir='.', model_dir='ckpt'):
         # pylint: disable=too-many-locals
         ''' Train the model '''
         with file_io.FileIO(filename, 'r') as fin:
@@ -83,14 +102,26 @@ class ModelBase(object):
                        callbacks=[tbCallBack])
         # Validation
         loss, acc = self.model.evaluate(vx, vy, batch_size=batch_size)
+
+        model_label = '{}_loss_{:.4f}_acc_{:.4f}'.format(label, loss, acc)
+        self.save_model(job_dir, model_dir, model_label)
+
         print()
-        model_label = '{}_loss_{}_acc_{}'.format(label, loss, acc)
-        self.model.save_weights('model.h5.tmp')
-        with file_io.FileIO('model.h5.tmp', mode='rb') as fin:
-            model_path = pjoin(job_dir, 'ckpt', 'model_{}.h5'.format(model_label))
-            with file_io.FileIO(model_path, mode='wb') as fout:
-                fout.write(fin.read())
-                print("Saved {}".format(model_path))
+        print('Loss =', loss)
+        print('Accuracy =', acc)
+
+    def test(self, filename, model_label, batch_size=100, include_eos=False,
+             job_dir='.', model_dir='ckpt'):
+        with file_io.FileIO(filename, 'r') as fin:
+            examples = pd.read_csv(fin)
+        self.vectorizer = self.make_vectorizer(examples, include_eos=include_eos)
+        self.build()
+        self.load_model(job_dir, model_dir, model_label)
+
+        x, y = get_fullbatch(examples, self.vectorizer, multiple=batch_size)
+        K.set_session(self.session)
+        loss, acc = self.model.evaluate(x, y, batch_size=batch_size)
+        print()
         print('Loss =', loss)
         print('Accuracy =', acc)
 

@@ -16,7 +16,45 @@ import sys
 import click
 
 
-@click.command()
+@click.group()
+def console():
+    pass
+
+@console.command()
+@click.option('-m', '--model', default='HRNN',
+              help='HRNN or RNN for encoder/decoder (default: HRNN)')
+@click.option('--job-dir', default='.',
+              help='The directory to use for the job, e.g., models, logs. (default: .)')
+@click.option('-b', '--batch-size', default=100,
+              help='The size of the batch. (default: 100)')
+@click.option('-s', '--embedding-size', default=64,
+              help='The size of the embedding states (HRNN only). (default: 64)')
+@click.option('-h', '--state-size', default=256,
+              help='The size of the hidden states. (default: 64)')
+@click.option('--eos', is_flag=True,
+              help='Whether to use special characters at the end of sequences.')
+@click.option('-l', '--log-device', is_flag=True)
+@click.argument('model_label')
+@click.argument('csvfile')
+def test(model, model_label, job_dir, batch_size, embedding_size, state_size, eos, log_device, csvfile):
+    from hrnn4sim.seqsim_hrnn import SeqSimHRNN
+    from hrnn4sim.seqsim_bihrnn import SeqSimBiHRNN
+    from hrnn4sim.seqsim_rnn import SeqSimRNN
+    if model == 'HRNN':
+        mdl = SeqSimHRNN(embedding_size=embedding_size, state_size=state_size,
+                         batch_size=batch_size, log_device=log_device)
+    elif model == 'BHRNN':
+        mdl = SeqSimBiHRNN(embedding_size=embedding_size, state_size=state_size,
+                           batch_size=batch_size, log_device=log_device)
+    elif model == 'RNN':
+        mdl = SeqSimRNN(state_size=state_size, log_device=log_device)
+    else:
+        print('Error: {model} is not recognized as a model. Please use HRNN or RNN.')
+        sys.exit(1)
+    mdl.test(csvfile, model_label, batch_size=batch_size, include_eos=eos, job_dir=job_dir)
+
+
+@console.command('train')
 @click.option('-m', '--model', default='HRNN',
               help='HRNN or RNN for encoder/decoder (default: HRNN)')
 @click.option('--job-dir', default='.',
@@ -35,7 +73,7 @@ import click
               help='Whether to use special characters at the end of sequences.')
 @click.option('-l', '--log-device', is_flag=True)
 @click.argument('csvfile')
-def console(model, job_dir, epochs, batch_size, split_ratio,
+def train(model, job_dir, epochs, batch_size, split_ratio,
             embedding_size, state_size, log_device, csvfile, eos):
     ''' Train a model for similarity measures.
     '''
