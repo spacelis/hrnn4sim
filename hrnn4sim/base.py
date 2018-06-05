@@ -18,10 +18,19 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow.python.lib.io import file_io
 from keras import backend as K
-from keras.callbacks import TensorBoard
+from keras.callbacks import TensorBoard, ModelCheckpoint
 
 from .vectorization import get_fullbatch, get_minibatches
 from .vectorization import dataset_tokenize
+
+
+def read_data(fin, filename):
+    """ Resove file format for the input file and return a file object """
+    if filename.endswith('.csv'):
+        return pd.read_csv(fin)
+    elif filename.endswith('.feather'):
+        return pd.read_feather(filename)
+    raise ValueError(f'File format not supported: {filename}')
 
 
 class ModelBase(object):
@@ -64,6 +73,7 @@ class ModelBase(object):
                 print("Saved {}".format(model_path))
 
     def load_model(self, job_dir, model_dir, model_label):
+        """ Loading model from files """
         model_path = pjoin(job_dir, model_dir, 'model_{}.h5'.format(model_label))
         with file_io.FileIO(model_path, mode='rb') as fin:
             with file_io.FileIO('model.h5.tmp', mode='wb') as fout:
@@ -72,23 +82,26 @@ class ModelBase(object):
         print("Load {}".format(model_path))
 
 
-    def train(self, filename, epochs=30, batch_size=100,
+    def train(self, filename, epochs=30, batch_size=100,  # pylint: disable=too-many-arguments
               split_ratio=0.8, include_eos=False,
               job_dir='.', model_dir='ckpt'):
         # pylint: disable=too-many-locals
         ''' Train the model '''
         with file_io.FileIO(filename, 'r') as fin:
-            examples = pd.read_csv(fin)
+            examples = read_data(fin, filename)
         self.vectorizer = self.make_vectorizer(examples, include_eos=include_eos)
         self.build()
 
         label = '{}_{}'.format(self.__class__.__name__, datetime.now().strftime("%Y%m%d_%H%M%S"))
 
         # Write Summaries to Tensorboard log
-        tbCallBack = TensorBoard(
+        tensorboardCB = TensorBoard(
             log_dir=pjoin(job_dir, 'tfgraph', label),
             #histogram_freq=100,
             write_graph=True)
+
+        ckpt_label = '{}_epoch_{{epoch:02d}}_acc_{{val_acc:.4f}}'.format(label)
+        checkpointCB = ModelCheckpoint(ckpt_label, monitor='val_acc', save_weights_only=True)
 
         # Train the model
         train_set, valid_set = self.split_examples(examples, split_ratio)
@@ -99,7 +112,8 @@ class ModelBase(object):
 
         K.set_session(self.session)
         self.model.fit(x, y, batch_size=batch_size, epochs=epochs,
-                       callbacks=[tbCallBack])
+                       validation_data=(vx, vy),
+                       callbacks=[tensorboardCB, checkpointCB])
         # Validation
         loss, acc = self.model.evaluate(vx, vy, batch_size=batch_size)
 
@@ -110,10 +124,11 @@ class ModelBase(object):
         print('Loss =', loss)
         print('Accuracy =', acc)
 
-    def test(self, filename, model_label, batch_size=100, include_eos=False,
-             job_dir='.', model_dir='ckpt'):
+    def test(self, filename, model_label, batch_size=100,  # pylint: disable=too-many-arguments
+             include_eos=False, job_dir='.', model_dir='ckpt'):
+        """ Evaluate model on the test data """
         with file_io.FileIO(filename, 'r') as fin:
-            examples = pd.read_csv(fin)
+            examples = read_data(fin, filename)
         self.vectorizer = self.make_vectorizer(examples, include_eos=include_eos)
         self.build()
         self.load_model(job_dir, model_dir, model_label)

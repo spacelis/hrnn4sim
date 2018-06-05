@@ -35,8 +35,8 @@ def console():
               help='Whether to use special characters at the end of sequences.')
 @click.option('-l', '--log-device', is_flag=True)
 @click.argument('model_label')
-@click.argument('csvfile')
-def test(model, model_label, job_dir, batch_size, embedding_size, state_size, eos, log_device, csvfile):
+@click.argument('datafile')
+def test(model, model_label, job_dir, batch_size, embedding_size, state_size, eos, log_device, datafile):
     from hrnn4sim.seqsim_hrnn import SeqSimHRNN
     from hrnn4sim.seqsim_bihrnn import SeqSimBiHRNN
     from hrnn4sim.seqsim_rnn import SeqSimRNN
@@ -51,7 +51,7 @@ def test(model, model_label, job_dir, batch_size, embedding_size, state_size, eo
     else:
         print('Error: {model} is not recognized as a model. Please use HRNN or RNN.')
         sys.exit(1)
-    mdl.test(csvfile, model_label, batch_size=batch_size, include_eos=eos, job_dir=job_dir)
+    mdl.test(datafile, model_label, batch_size=batch_size, include_eos=eos, job_dir=job_dir)
 
 
 @console.command('train')
@@ -72,9 +72,9 @@ def test(model, model_label, job_dir, batch_size, embedding_size, state_size, eo
 @click.option('--eos', is_flag=True,
               help='Whether to use special characters at the end of sequences.')
 @click.option('-l', '--log-device', is_flag=True)
-@click.argument('csvfile')
+@click.argument('datafile')
 def train(model, job_dir, epochs, batch_size, split_ratio,
-            embedding_size, state_size, log_device, csvfile, eos):
+            embedding_size, state_size, log_device, datafile, eos):
     ''' Train a model for similarity measures.
     '''
     from hrnn4sim.seqsim_hrnn import SeqSimHRNN
@@ -91,7 +91,7 @@ def train(model, job_dir, epochs, batch_size, split_ratio,
     else:
         print('Error: {model} is not recognized as a model. Please use HRNN or RNN.')
         sys.exit(1)
-    mdl.train(csvfile, epochs=epochs, batch_size=batch_size,
+    mdl.train(datafile, epochs=epochs, batch_size=batch_size,
               split_ratio=split_ratio, job_dir=job_dir, include_eos=eos)
 
 

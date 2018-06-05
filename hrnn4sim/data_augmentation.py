@@ -11,6 +11,7 @@ Description: Augmenting data with some sythetic negative examples.
 # pylint: disable=invalid-name
 
 from __future__ import print_function
+import sys
 import re
 import random
 
@@ -96,14 +97,27 @@ def console(src, dst):
         matched). Augmentation includes number changing, identity
         matching.
     '''
-    raw_data = pd.read_csv(src)
+    if src.endswith('csv'):
+        raw_data = pd.read_csv(src)
+    elif src.endswith('.feather'):
+        raw_data = pd.read_feather(src)
+    else:
+        print('Error: Input file format not supported', file=sys.stderr)
+        sys.exit(-1)
 
     print("uniqA={}".format(raw_data['addra'].nunique()))
     print("uniqB={}".format(raw_data['addrb'].nunique()))
     print("pairCnt={}".format(len(raw_data)))
 
     examples = data_augmentation(raw_data).sample(frac=1)  # Randomized rows
-    examples.to_csv(dst, index=False)
+    print(examples.head())
+    if src.endswith('csv'):
+        examples.to_csv(dst, index=False)
+    elif src.endswith('.feather'):
+        examples.reset_index()[['seqa', 'seqb', 'matched']].to_feather(dst)
+    else:
+        print('Error: Output file format not supported', file=sys.stderr)
+        sys.exit(-1)
 
 if __name__ == "__main__":
     console()  # pylint: disable=no-value-for-parameter
