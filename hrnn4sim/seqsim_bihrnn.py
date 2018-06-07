@@ -23,13 +23,17 @@ from .base import ModelBase
 
 class SeqSimBiHRNN(ModelBase):
     """ Similiarity Model based on HierarchicalRNN """
-    def __init__(self, embedding_size=64, state_size=256, batch_size=100, **kwargs):  # pylint: disable=too-many-locals
+    def __init__(self, embedding_size=64, state_size=100,   # pylint: disable=too-many-arguments
+                 batch_size=100,
+                 wenc_dor=0.5, senc_dor=0.5, **kwargs):
         super(SeqSimBiHRNN, self).__init__(**kwargs)
         self.embedding_size = embedding_size
         self.state_size = state_size
         self.batch_size = batch_size
+        self.wenc_dor = wenc_dor
+        self.senc_dor = senc_dor
 
-    def build(self):
+    def build(self):  # pylint: disable=too-many-locals
         ''' Build the model '''
         K.set_session(self.session)
         ### Hierarchical Recurrent Neural Network
@@ -51,7 +55,7 @@ class SeqSimBiHRNN(ModelBase):
 
 
         em = Embedding(len(self.vectorizer.alphabet) + 1, self.embedding_size, mask_zero=True)
-        encoder = SimpleRNN(self.state_size, dropout=0.2, recurrent_dropout=0.2)
+        encoder = SimpleRNN(self.state_size, dropout=self.wenc_dor, recurrent_dropout=self.wenc_dor)
         features = Dense(self.state_size)
         seq_encoder = Lambda(lambda inputs: features(encoder(em(inputs))))
         encoder_l = TimeDistributed(seq_encoder)
@@ -62,20 +66,20 @@ class SeqSimBiHRNN(ModelBase):
         codAr = encoder_r(Ar, mask=masking(Ar))
         codBr = encoder_r(Br, mask=masking(Br))
 
-        lstmA = LSTM(self.state_size,
-                     dropout=0.2, recurrent_dropout=0.2, return_state=True)(codA)
-        lstmAr = LSTM(self.state_size,
-                      dropout=0.2, recurrent_dropout=0.2, return_state=True)(codAr)
+        lstmA = LSTM(self.state_size, dropout=self.senc_dor, recurrent_dropout=self.senc_dor,
+                     return_state=True)(codA)
+        lstmAr = LSTM(self.state_size, dropout=self.senc_dor, recurrent_dropout=self.senc_dor,
+                      return_state=True)(codAr)
 
         concat_mem = Concatenate(axis=1)([lstmA[-2], lstmAr[-2]])
         concat_state = Concatenate(axis=1)([lstmA[-1], lstmAr[-1]])
         merged_mem = Dense(self.state_size, activation='relu')(concat_mem)
         merged_state = Dense(self.state_size, activation='relu')(concat_state)
 
-        lstmB = LSTM(self.state_size,
-                     dropout=0.2, recurrent_dropout=0.2)(codB, [merged_mem, merged_state])
-        lstmBr = LSTM(self.state_size,
-                      dropout=0.2, recurrent_dropout=0.2)(codBr, [merged_mem, merged_state])
+        lstmB = LSTM(self.state_size, dropout=self.senc_dor, recurrent_dropout=self.senc_dor)\
+            (codB, [merged_mem, merged_state])
+        lstmBr = LSTM(self.state_size, dropout=self.senc_dor, recurrent_dropout=self.senc_dor)\
+            (codBr, [merged_mem, merged_state])
         combined = Concatenate(axis=1)([lstmB, lstmBr])
         output = Dense(1, activation='sigmoid')(combined)
         self.model = Model(inputs=[A, Ar, B, Br], outputs=[output])
