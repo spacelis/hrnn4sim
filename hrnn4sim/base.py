@@ -89,6 +89,7 @@ class ModelBase(object):
         ''' Train the model '''
         with file_io.FileIO(filename, 'r') as fin:
             examples = read_data(fin, filename)
+        examples = examples.sample(frac=1).reset_index(drop=True)
         self.vectorizer = self.make_vectorizer(examples, include_eos=include_eos)
         self.build()
 
@@ -106,7 +107,7 @@ class ModelBase(object):
         # Train the model
         train_set, valid_set = self.split_examples(examples, split_ratio)
         x, y = get_fullbatch(train_set, self.vectorizer, multiple=batch_size)
-        vx, vy = next(get_minibatches(valid_set, self.vectorizer, batch_size, with_original=False))
+        vx, vy = get_fullbatch(valid_set, self.vectorizer, multiple=batch_size, with_original=False)
 
         # Training
 
