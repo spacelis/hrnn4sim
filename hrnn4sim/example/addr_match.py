@@ -18,6 +18,7 @@ import click
 
 @click.group()
 def console():
+    """ dummy """
     pass
 
 @console.command()
@@ -36,7 +37,9 @@ def console():
 @click.option('-l', '--log-device', is_flag=True)
 @click.argument('model_label')
 @click.argument('datafile')
-def test(model, model_label, job_dir, batch_size, embedding_size, state_size, eos, log_device, datafile):
+def test(model, model_label, job_dir, batch_size,  # pylint: disable=too-many-arguments
+         embedding_size, state_size, eos, log_device, datafile):
+    """ Running test """
     from hrnn4sim.seqsim_hrnn import SeqSimHRNN
     from hrnn4sim.seqsim_bihrnn import SeqSimBiHRNN
     from hrnn4sim.seqsim_rnn import SeqSimRNN
@@ -73,8 +76,8 @@ def test(model, model_label, job_dir, batch_size, embedding_size, state_size, eo
               help='Whether to use special characters at the end of sequences.')
 @click.option('-l', '--log-device', is_flag=True)
 @click.argument('datafile')
-def train(model, job_dir, epochs, batch_size, split_ratio,
-            embedding_size, state_size, log_device, datafile, eos):
+def train(model, job_dir, epochs, batch_size, split_ratio,  # pylint: disable=too-many-arguments
+          embedding_size, state_size, log_device, datafile, eos):
     ''' Train a model for similarity measures.
     '''
     from hrnn4sim.seqsim_hrnn import SeqSimHRNN
