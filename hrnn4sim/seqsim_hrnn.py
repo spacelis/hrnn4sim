@@ -34,6 +34,7 @@ class SeqSimHRNN(ModelBase):
         self.senc_dor = senc_dor
         self.state_size = state_size
         self.batch_size = batch_size
+        self.other_layers = []
 
     def build(self):
         ''' Build the model '''
@@ -75,6 +76,9 @@ class SeqSimHRNN(ModelBase):
         self.model.compile(loss='binary_crossentropy',
                            optimizer='adam',
                            metrics=['accuracy'])
+
+        # Make sure Keras recognise these layers when saving/loading weights
+        self.model.layers.extend(self.other_layers)
         self.model.summary()
 
     def make_vectorizer(self, examples, **kwargs):  #pylint: disable=unused-variable

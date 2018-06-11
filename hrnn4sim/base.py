@@ -132,10 +132,10 @@ class ModelBase(object):
             examples = read_data(fin, filename)
         self.vectorizer = self.make_vectorizer(examples, include_eos=include_eos)
         self.build()
+        K.set_session(self.session)
         self.load_model(job_dir, model_dir, model_label)
 
         x, y = get_fullbatch(examples, self.vectorizer, multiple=batch_size)
-        K.set_session(self.session)
         loss, acc = self.model.evaluate(x, y, batch_size=batch_size)
         print()
         print('Loss =', loss)
