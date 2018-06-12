@@ -82,7 +82,8 @@ class ModelBase(object):
         print("Load {}".format(model_path))
 
 
-    def train(self, filename, epochs=30, batch_size=100,  # pylint: disable=too-many-arguments
+    def train(self, filename, model_label=None,   # pylint: disable=too-many-arguments
+              epochs=30, batch_size=100,
               split_ratio=0.8, include_eos=False,
               job_dir='.', model_dir='ckpt'):
         # pylint: disable=too-many-locals
@@ -92,6 +93,9 @@ class ModelBase(object):
         examples = examples.sample(frac=1).reset_index(drop=True)
         self.vectorizer = self.make_vectorizer(examples, include_eos=include_eos)
         self.build()
+
+        if model_label is not None:
+            self.load_model(job_dir, model_dir, model_label)
 
         label = '{}_{}'.format(self.__class__.__name__, datetime.now().strftime("%Y%m%d_%H%M%S"))
 

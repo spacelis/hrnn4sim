@@ -37,7 +37,7 @@ def console():
 @click.option('-l', '--log-device', is_flag=True)
 @click.argument('model_label')
 @click.argument('datafile')
-def test(model, model_label, job_dir, batch_size,  # pylint: disable=too-many-arguments
+def test(model, model_label, job_dir, batch_size, # pylint: disable=too-many-arguments
          embedding_size, state_size, eos, log_device, datafile):
     """ Running test """
     from hrnn4sim.seqsim_hrnn import SeqSimHRNN
@@ -74,10 +74,12 @@ def test(model, model_label, job_dir, batch_size,  # pylint: disable=too-many-ar
               help='The size of the hidden states. (default: 64)')
 @click.option('--eos', is_flag=True,
               help='Whether to use special characters at the end of sequences.')
+@click.option('--params-from', default=None,
+              help='Load params from the specified file before training.')
 @click.option('-l', '--log-device', is_flag=True)
 @click.argument('datafile')
 def train(model, job_dir, epochs, batch_size, split_ratio,  # pylint: disable=too-many-arguments
-          embedding_size, state_size, log_device, datafile, eos):
+          params_from, embedding_size, state_size, log_device, datafile, eos):
     ''' Train a model for similarity measures.
     '''
     from hrnn4sim.seqsim_hrnn import SeqSimHRNN
@@ -94,7 +96,7 @@ def train(model, job_dir, epochs, batch_size, split_ratio,  # pylint: disable=to
     else:
         print('Error: {model} is not recognized as a model. Please use HRNN or RNN.')
         sys.exit(1)
-    mdl.train(datafile, epochs=epochs, batch_size=batch_size,
+    mdl.train(datafile, epochs=epochs, batch_size=batch_size, model_label=params_from,
               split_ratio=split_ratio, job_dir=job_dir, include_eos=eos)
 
 
