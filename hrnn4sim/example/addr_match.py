@@ -68,7 +68,7 @@ def test(model, model_label, job_dir, batch_size, # pylint: disable=too-many-arg
               help='The size of the batch. (default: 100)')
 @click.option('-s', '--embedding-size', default=64,
               help='The size of the embedding states (HRNN only). (default: 64)')
-@click.option('-t', '--split-ratio', default=0.8,
+@click.option('-t', '--validation-split', default=0.8,
               help='The ratio for train/test split. (default: 0.8)')
 @click.option('-h', '--state-size', default=256,
               help='The size of the hidden states. (default: 64)')
@@ -76,9 +76,12 @@ def test(model, model_label, job_dir, batch_size, # pylint: disable=too-many-arg
               help='Whether to use special characters at the end of sequences.')
 @click.option('--params-from', default=None,
               help='Load params from the specified file before training.')
+@click.option('--validate-on', default=None,
+              help='A validation dataset while training and this overrides --validation-split')
 @click.option('-l', '--log-device', is_flag=True)
 @click.argument('datafile')
-def train(model, job_dir, epochs, batch_size, split_ratio,  # pylint: disable=too-many-arguments
+def train(model, job_dir, epochs, batch_size,  # pylint: disable=too-many-arguments
+          validation_split, validate_on,
           params_from, embedding_size, state_size, log_device, datafile, eos):
     ''' Train a model for similarity measures.
     '''
@@ -97,7 +100,8 @@ def train(model, job_dir, epochs, batch_size, split_ratio,  # pylint: disable=to
         print('Error: {model} is not recognized as a model. Please use HRNN or RNN.')
         sys.exit(1)
     mdl.train(datafile, epochs=epochs, batch_size=batch_size, model_label=params_from,
-              split_ratio=split_ratio, job_dir=job_dir, include_eos=eos)
+              val_split=validation_split, val_file=validate_on,
+              job_dir=job_dir, include_eos=eos)
 
 
 if __name__ == "__main__":

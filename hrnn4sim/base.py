@@ -82,16 +82,30 @@ class ModelBase(object):
         print("Load {}".format(model_path))
 
 
-    def train(self, filename, model_label=None,   # pylint: disable=too-many-arguments
+    def train(self, trainfile, model_label=None,   # pylint: disable=too-many-arguments
               epochs=30, batch_size=100,
-              split_ratio=0.8, include_eos=False,
+              val_file=None, val_split=0.8,
+              shuffle=False, include_eos=False,
               job_dir='.', model_dir='ckpt'):
         # pylint: disable=too-many-locals
         ''' Train the model '''
-        with file_io.FileIO(filename, 'r') as fin:
-            examples = read_data(fin, filename)
-        examples = examples.sample(frac=1).reset_index(drop=True)
-        self.vectorizer = self.make_vectorizer(examples, include_eos=include_eos)
+        with file_io.FileIO(trainfile, 'r') as fin:
+            examples = read_data(fin, trainfile)
+        if shuffle:
+            examples = examples.sample(frac=1).reset_index(drop=True)
+        else:
+            examples = examples.reset_index(drop=True)
+        if val_file is not None:
+            with file_io.FileIO(trainfile, 'r') as fin:
+                val_examples = read_data(fin, trainfile)
+            if shuffle:
+                val_examples = val_examples.sample(frac=1).reset_index(drop=True)
+            else:
+                val_examples = val_examples.reset_index(drop=True)
+            self.vectorizer = self.make_vectorizer(pd.concat([examples, val_examples]),
+                                                   include_eos=include_eos)
+        else:
+            self.vectorizer = self.make_vectorizer(examples, include_eos=include_eos)
         self.build()
 
         if model_label is not None:
@@ -109,9 +123,12 @@ class ModelBase(object):
         checkpointCB = ModelCheckpoint(ckpt_label, monitor='val_acc', save_weights_only=True)
 
         # Train the model
-        train_set, valid_set = self.split_examples(examples, split_ratio)
+        if val_file is not None:
+            train_set, valid_set = self.split_examples(examples, val_split)
+        else:
+            train_set, valid_set = examples, val_examples
         x, y = get_fullbatch(train_set, self.vectorizer, multiple=batch_size)
-        vx, vy = get_fullbatch(valid_set, self.vectorizer, multiple=batch_size, with_original=False)
+        vx, vy = get_fullbatch(valid_set, self.vectorizer, multiple=batch_size)
 
         # Training
 
@@ -129,11 +146,11 @@ class ModelBase(object):
         print('Loss =', loss)
         print('Accuracy =', acc)
 
-    def test(self, filename, model_label, batch_size=100,  # pylint: disable=too-many-arguments
+    def test(self, testfile, model_label, batch_size=100,  # pylint: disable=too-many-arguments
              include_eos=False, job_dir='.', model_dir='ckpt'):
         """ Evaluate model on the test data """
-        with file_io.FileIO(filename, 'r') as fin:
-            examples = read_data(fin, filename)
+        with file_io.FileIO(testfile, 'r') as fin:
+            examples = read_data(fin, testfile)
         self.vectorizer = self.make_vectorizer(examples, include_eos=include_eos)
         self.build()
         K.set_session(self.session)

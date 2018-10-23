@@ -19,7 +19,7 @@ class TarCommand(distutils.cmd.Command):
     def run(self):
         command=['/bin/tar', 'czf', 'hrnn.tar.gz', 'hrnn4sim', 'LICENSE', 'README.md', 'setup.py']
         if self.with_data:
-            command += ['data/training_example.feather']
+            command += ['data/training_set.feather', 'data/valid_set.feather']
             self.announce('Taring the project with data ...')
         else:
             self.announce('Taring the project with NO data ...')
